@@ -1,3 +1,8 @@
+if (typeof browser === "undefined") {
+    var browser = chrome;
+}
+
+
 function hasHebrewText(elem) {
     const hebrewRegex = /[\u0590-\u05FF]/;
     
@@ -50,7 +55,6 @@ function enhanceElement(cityData, element) {
 }
 
 function extractGroupNameFromUrl(url) {
-    console.log(url)
     const regex = /\/groups\/([^/]+)/;
     const match = url.match(regex);
     
@@ -63,6 +67,14 @@ function extractGroupNameFromUrl(url) {
 
 function handlePost(cityData, postElement) {
     seeMore(postElement);
+
+    const classMarker = "HomeFinderClass";
+    if (postElement.classList.contains(classMarker)) {
+        //console.log("HomeFinder: Element parsed more than once", postElement);
+        return;
+    }
+
+    postElement.classList.add(classMarker);
     
     setTimeout(() => {
         const contentChildren = postElement.querySelectorAll('div,h4,span,b,i');
@@ -76,11 +88,20 @@ function handlePost(cityData, postElement) {
     
 }
 
+const targetNodeTracker = {};
+
 function attachToTarget(targetNode, data) {
+    if (targetNode in targetNodeTracker)
+    {
+        //console.log("Already tracked", targetNode)
+        targetNodeTracker[targetNode].disconnect();
+    }
     
     for (const child of targetNode.children) { 
         handlePost(data, child);
     }
+
+    const date = new Date().getTime();
     
     const callback = (mutationList, observer) => {
         for (const mutation of mutationList) {
@@ -94,14 +115,16 @@ function attachToTarget(targetNode, data) {
                 {
                     continue;
                 }
+                //console.log(date, addedElement, targetNode);
                 handlePost(data, addedElement);
             }
         }
     };
     
     const observer = new MutationObserver(callback);
+    targetNodeTracker[targetNode] = observer;
     
-    observer.observe(targetNode, { attributes: true, childList: true, subtree: true, characterData : true });
+    targetNodeTracker[targetNode].observe(targetNode, { attributes: true, childList: true, subtree: true, characterData : true });
     console.log("HomeFinder: Attached to", targetNode);
 }
 
@@ -128,10 +151,13 @@ function init(target) {
     if (target !== null) {
         attachToTarget(target, cityData);
     } else {
-        const articleNode = document.querySelector("div[role='article']");
-        if (articleNode != null) {
-            handlePost(cityData, articleNode);
-        }
+        console.log("Can't find feed, assuming single post");
+        setTimeout(() => {
+            const articleNode = document.querySelector("div[role='article']");
+            if (articleNode != null) {
+                handlePost(cityData, articleNode);
+            }
+        }, 2000);
     }
 
 }
@@ -159,3 +185,15 @@ const mainObserver = new MutationObserver((mutationList, observer) => {
         }
     }
 }).observe(document.body, { attributes: false, childList: true, subtree: true });
+
+const port = browser.runtime.connect({ name: "content-script-port" });
+
+port.onMessage.addListener((message) => {
+    // Handle messages received from the background page
+    setTimeout(() => {
+        console.log("HomeFinder: Trigger received from background page", document.querySelectorAll("div[role='feed']"));
+        document.querySelectorAll("div[role='feed']").forEach((elem) => {
+            init(elem);
+        })
+    }, 2000);
+});
