@@ -4,7 +4,7 @@ if (typeof browser === "undefined") {
 
 
 function hasHebrewText(elem) {
-    const hebrewRegex = /[\u0590-\u05FF]/;
+    const hebrewRegex = /[\u0590-\u05FF₪]/;
     
     for (const node of elem.childNodes) {
         if (node.nodeType === Node.TEXT_NODE) {
