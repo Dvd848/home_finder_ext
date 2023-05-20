@@ -56,7 +56,7 @@ const monthRegex = new RegExp("([\\s\\-]+"
 /*alignToLeft*/         + "(?:ינואר|פברואר|מרץ|מרס|אפריל|מאי|יוני|יולי|אוגוסט|ספטמבר|אוקטובר|נובמבר|דצמבר|מיידי|מיידית|מידית|הכניסה|כניסה)" 
                 + word_boundry + ")", "g");
 
-const rentRegex = new RegExp(/((?:[1-9][\d,]*[\d])?[ ]*(שכר דירה|שכר הדירה|ש"ח|שקל|ש״ח|שח|ש''ח|ש'ח|שכה"ד|שכ"ד|שכ״ד|שכה״ד|שכד|כולל ה-כ-ל|שקלים|לחודש|כולל הכלל|לא כולל|כולל הכל|הסכום הוא|מחיר)(?:[^א-ת]|$)\s*(?:[1-9][\d,]*[\d])?)/g);
+const rentRegex = new RegExp(/((?:[1-9][\d,]*[\d])?(?:\s*-\s*[1-9][\d,]*[\d])?\s*(שכר דירה|שכר הדירה|ש&quot;ח|ש"ח|שקל|ש״ח|שח|ש''ח|ש'ח|שכה"ד|שכ"ד|שכ״ד|שכה״ד|שכד|כולל ה-כ-ל|שקלים|לחודש|כולל הכלל|לא כולל|כולל הכל|הסכום הוא|מחיר)(?:[^א-ת]|$)\s*(?:[1-9][\d,]*[\d])?)/g);
 const rentRegex2 = new RegExp(/((?:[1-9][\d,]*[\d])?[ ]*(₪)\s*(?:[1-9][\d,]*[\d])?)/g);
 
 const streetRegex = new RegExp(/(מדרחוב|רחוב(?!ות)|רח')/g);
@@ -86,10 +86,10 @@ function replaceKeywords(text) {
     
     text = text.replace(coupleRegex,"$1<b style='color: Magenta'>$2</b>"); 
     
-    text = text.replace(monthRegex," <b style='color: blue'>$1</b> "); 
+    text = text.replace(monthRegex,"<b style='color: blue'>$1</b>"); 
     
-    text = text.replace(rentRegex2,"<b style='color: green'>$1</b> "); //must come before rentRegex 
-    text = text.replace(rentRegex,"<b style='color: green'>$1</b> "); 
+    text = text.replace(rentRegex2,"<b style='color: green'>$1</b>"); //must come before rentRegex 
+    text = text.replace(rentRegex,"<b style='color: green'>$1</b>"); 
 
     text = text.replace(neighborhoodRegex,"$1<b style='color: purple'>$2</b>");
     
