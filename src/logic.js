@@ -36,9 +36,9 @@ function buildListRegexFromArray(arr) {
 
 const word_boundry = "(?=[\\+\\b\\.!?,\\*\\s\\-\\)\\(/\\-:'}\\\"\\\\]|$)"; //end
 
-const streetNameRegex = new RegExp("((?:(?:[\\s\\(\\)\\-:/{\\\",\\.]+|^)ב?מ?ל?ו?)("+buildListRegexFromArray(streetArr)+")(\\s*(?:[1-9][0-9]*)?))" + word_boundry,"g");
+//const streetNameRegex = new RegExp("((?:(?:[\\s\\(\\)\\-:/{\\\",\\.]+|^)ב?מ?ל?ו?)("+buildListRegexFromArray(streetArr)+")(\\s*(?:[1-9][0-9]*)?))" + word_boundry,"g");
 
-const neighborhoodRegex = new RegExp("(^|[^א-ת](?:ש?ב?ה?מ?ל?ו?)?)" + "(" + buildListRegexFromArray(neighborhoodArr) + ")" + word_boundry,"ig");
+//const neighborhoodRegex = new RegExp("(^|[^א-ת](?:ש?ב?ה?מ?ל?ו?)?)" + "(" + buildListRegexFromArray(neighborhoodArr) + ")" + word_boundry,"ig");
 
 const phraseRegex = new RegExp(/(הרכבת הקלה|מתחם הרכבת|בתקופה זו|תקופה של|תחנת הרכבת|טיילת הרכבת|כל התקופה|בן אדם|לא עובד|שימו לב|לאדם|לתקופה|לרכבת|רמי לוי|מוצפת|ברמה|מפרץ חיפה|ברות|משותפת|מראה את|להמליץ|עובד ב|[^ה]מדרגות)/g);
 
@@ -67,7 +67,21 @@ const stuffRegex = new RegExp("(^|[^א-ת](?:ב?ה?מ?ל?ו?)?)" +
 
 const religionRegex = new RegExp("(^|[^א-ת](?:ל|ה|ול|ו)?)(דתיה|דתייה|דתי|כשרות|דתית|כשר|שבת|דתיים|דתיות)" + word_boundry, "g");
 
-function replaceKeywords(text) {
+const cityDataCache = {}
+
+function prepareCityDataParsed(cityData) {
+    if (!(cityData.id in cityDataCache)) {
+        cityDataCache[cityData.id] = {
+            streetNameRegex: new RegExp("((?:(?:[\\s\\(\\)\\-:/{\\\",\\.]+|^)ב?מ?ל?ו?)("+buildListRegexFromArray(cityData.streetArr)+")(\\s*(?:[1-9][0-9]*)?))" + word_boundry,"g"),
+            neighborhoodRegex: new RegExp("(^|[^א-ת](?:ש?ב?ה?מ?ל?ו?)?)" + "(" + buildListRegexFromArray(cityData.neighborhoodArr) + ")" + word_boundry,"ig"),
+            cityName: cityData.cityName,
+            cityName_en: cityData.cityName_en
+        }
+    }
+    return cityDataCache[cityData.id];
+}
+
+function replaceKeywords(cityDataParsed, text) {
     
     text = text.replace(/(״)/g, "\"");
     
@@ -91,7 +105,7 @@ function replaceKeywords(text) {
     text = text.replace(rentRegex2,"<b style='color: green'>$1</b>"); //must come before rentRegex 
     text = text.replace(rentRegex,"<b style='color: green'>$1</b>"); 
 
-    text = text.replace(neighborhoodRegex,"$1<b style='color: purple'>$2</b>");
+    text = text.replace(cityDataParsed.neighborhoodRegex,"$1<b style='color: purple'>$2</b>");
     
     text = text.replace(streetRegex,"<b style='color: BurlyWood'>$1</b>");
     
@@ -105,7 +119,7 @@ function replaceKeywords(text) {
     });
     
     //must be before last
-    text = text.replace(streetNameRegex, function(match, p1, p2, p3) {
+    text = text.replace(cityDataParsed.streetNameRegex, function(match, p1, p2, p3) {
             
             let pre_linebreak = "";
             let post_linebreak = "";
@@ -151,7 +165,7 @@ function replaceKeywords(text) {
                         
             return ""+pre_linebreak+"<b style='color: orange'><a style='color: orange; text-decoration: underline;' href='" 
             + maps_link + "?f=q&source=s_q&language=iw&hl=iw&ie=UTF8&geocode=&q=רחוב+" 
-            + b + ",+" + cityName + "+" + cityName_en + "' target='_BLANK'>" 
+            + b + ",+" + cityDataParsed.cityName + "+" + cityDataParsed.cityName_en + "' target='_BLANK'>" 
             + a + "</a></b>"  + post_linebreak;
     });
 
@@ -164,3 +178,5 @@ function replaceKeywords(text) {
 
     return text;
 };
+
+const cityData = {};

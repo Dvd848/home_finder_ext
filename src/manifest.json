@@ -3,25 +3,17 @@
     "version": "0.1",
     "name": "HomeFinder",
     "content_scripts": [
-       {
-         "matches": [
-            "https://*.facebook.com/groups/570905303053795*"
-          ],
-         "js": [
-           "cities/hf.js",
-            "logic.js",
-            "contentScript.js"
-          ]
-       },
-       {
-        "matches": [
-           "https://*.facebook.com/groups/344780799040537*"
-         ],
-        "js": [
-           "cities/jer.js",
-           "logic.js",
-           "contentScript.js"
-         ]
-      }
-     ]
+        {
+            "matches": [
+                "https://*.facebook.com/*"
+            ],
+            "js": [
+                "logic.js",
+                "cities/jer.js",
+                "cities/hf.js",
+                "contentScript.js"
+            ],
+            "run_at": "document_end"
+        }
+    ]
 }
