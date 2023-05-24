@@ -16,8 +16,11 @@
             ],
             "js": [
                 "logic.js",
-                "cities/jer.js",
+                "cities/bs.js",
                 "cities/hf.js",
+                "cities/jer.js",
+                "cities/md.js",
+                "cities/ta.js",
                 "contentScript.js"
             ],
             "run_at": "document_end"
